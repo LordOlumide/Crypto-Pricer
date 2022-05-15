@@ -13,6 +13,7 @@ Map<int, String> errorCodes = {
 };
 
 class NetworkHelper {
+
   Future<dynamic> getResponse(
       {required String cryptoCoin, required String fiatCurrency}) async {
 
@@ -33,4 +34,6 @@ class NetworkHelper {
       return e;
     }
   }
+
 }
+
