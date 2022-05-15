@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import '../coin_data.dart';
 import 'dart:io' show Platform;
+import 'package:bitcoin_ticker_reloaded/services/data_hub.dart';
 
 class PriceScreen extends StatefulWidget {
   final Map<String, double> initialRates;
-  
+
   const PriceScreen({required this.initialRates});
-  
+
   @override
   _PriceScreenState createState() => _PriceScreenState();
 }
@@ -39,9 +40,12 @@ class _PriceScreenState extends State<PriceScreen> {
       return DropdownButton(
         value: dropdownMenuValue,
         items: items,
-        onChanged: (String? selectedValue) {
+        onChanged: (String? selectedValue) async {
+          Map<String, double> tempRates =
+              await DataHub().getRefreshedRates(fiat: dropdownMenuValue);
           setState(() {
             dropdownMenuValue = selectedValue!;
+            rates = tempRates;
           });
         },
       );
@@ -52,8 +56,14 @@ class _PriceScreenState extends State<PriceScreen> {
         squeeze: 1.2,
         itemExtent: 25.0,
         magnification: 1.2,
-        onSelectedItemChanged: (value) {
-          dropdownMenuValue = currenciesList[value];
+        onSelectedItemChanged: (value) async {
+          Map<String, double> tempRates =
+              await DataHub().getRefreshedRates(fiat: dropdownMenuValue);
+          print(tempRates);
+          setState(() {
+            dropdownMenuValue = currenciesList[value];
+            rates = tempRates;
+          });
         },
         children: currenciesList.map((e) => Text(e)).toList(),
       );
@@ -80,7 +90,7 @@ class _PriceScreenState extends State<PriceScreen> {
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
+                    padding: EdgeInsets.symmetric(vertical: 15.0),
                     child: Text(
                       '1 BTC = ${rates['btcRate']} $dropdownMenuValue',
                       textAlign: TextAlign.center,
@@ -101,7 +111,7 @@ class _PriceScreenState extends State<PriceScreen> {
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
+                    padding: EdgeInsets.symmetric(vertical: 15.0),
                     child: Text(
                       '1 ETH = ${rates['ethRate']} $dropdownMenuValue',
                       textAlign: TextAlign.center,
@@ -122,7 +132,7 @@ class _PriceScreenState extends State<PriceScreen> {
                     borderRadius: BorderRadius.circular(10.0),
                   ),
                   child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
+                    padding: EdgeInsets.symmetric(vertical: 15.0),
                     child: Text(
                       '1 LTC = ${rates['ltcRate']} $dropdownMenuValue',
                       textAlign: TextAlign.center,
