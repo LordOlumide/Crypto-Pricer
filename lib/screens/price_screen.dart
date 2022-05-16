@@ -36,6 +36,20 @@ class _PriceScreenState extends State<PriceScreen> {
       }));
     }
 
+    refresh(newValue) async {
+      Map<String, double> tempRates =
+      await DataHub().getRefreshedRates(fiat: newValue);
+      if (ratesAreCorrect(tempRates)) {
+        setState(() {
+          dropdownMenuValue = newValue;
+          rates = tempRates;
+        });
+      } else {
+        String errorString = checkErrorAndReturnErrorString(tempRates);
+        pushToErrorScreen(error: errorString);
+      }
+    }
+
     Widget androidDropdown() {
       List<DropdownMenuItem<String>> items = [];
       for (int i = 0; i < currenciesList.length; i++) {
@@ -50,17 +64,7 @@ class _PriceScreenState extends State<PriceScreen> {
         value: dropdownMenuValue,
         items: items,
         onChanged: (String? selectedValue) async {
-          Map<String, double> tempRates =
-              await DataHub().getRefreshedRates(fiat: selectedValue!);
-          if (ratesAreCorrect(tempRates)) {
-            setState(() {
-              dropdownMenuValue = selectedValue;
-              rates = tempRates;
-            });
-          } else {
-            String errorString = checkErrorAndReturnErrorString(tempRates);
-            pushToErrorScreen(error: errorString);
-          }
+          refresh(selectedValue);
         },
       );
     }
@@ -71,17 +75,7 @@ class _PriceScreenState extends State<PriceScreen> {
         itemExtent: 25.0,
         magnification: 1.2,
         onSelectedItemChanged: (value) async {
-          Map<String, double> tempRates =
-              await DataHub().getRefreshedRates(fiat: currenciesList[value]);
-          if (ratesAreCorrect(tempRates)) {
-            setState(() {
-              dropdownMenuValue = currenciesList[value];
-              rates = tempRates;
-            });
-          } else {
-            String errorString = checkErrorAndReturnErrorString(tempRates);
-            pushToErrorScreen(error: errorString);
-          }
+          refresh(currenciesList[value]);
         },
         children: currenciesList.map((e) => Text(e)).toList(),
       );
@@ -89,6 +83,7 @@ class _PriceScreenState extends State<PriceScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.red[900],
         title: Text('🤑 Coin Ticker'),
         centerTitle: true,
       ),
@@ -160,6 +155,16 @@ class _PriceScreenState extends State<PriceScreen> {
                       ),
                     ),
                   ),
+                ),
+              ),
+              SizedBox(height: 50),
+              IconButton(
+                onPressed: () {
+                  refresh(dropdownMenuValue);
+                },
+                icon: const Icon(
+                  Icons.refresh,
+                  size: 30.0,
                 ),
               ),
             ],
