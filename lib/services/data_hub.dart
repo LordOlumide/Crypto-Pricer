@@ -23,7 +23,6 @@ class DataHub {
     if (errorCodes.containsValue(responseData)) {
       int errorCode =
           errorCodes.keys.firstWhere((key) => errorCodes[key] == responseData);
-      // print(errorCode);
       return -errorCode.toDouble();
     }
     // else if response is a SocketException, pass the exception forward intact
@@ -31,7 +30,7 @@ class DataHub {
       return -1;
     }
     // else, the response is correct. Return it.
-    else if (responseData['btcRate'] >= 0) {
+    else if (responseData['rate'] != null) {
       double rate = responseData["rate"];
       return double.parse(rate.toStringAsFixed(approximation));
     }
@@ -49,9 +48,11 @@ class DataHub {
   }
 
   Future<Map<String, double>> getRefreshedRates({required String fiat}) async {
+    // Gets the price or error data.
     double btc = await getRate(coin: "BTC", approximation: 5, fiat: fiat);
     double eth = await getRate(coin: "ETH", approximation: 4, fiat: fiat);
     double ltc = await getRate(coin: "LTC", approximation: 3, fiat: fiat);
+    print('btc: $btc, eth: $eth, ltc: $ltc');
     return {"btcRate": btc, "ethRate": eth, "ltcRate": ltc};
   }
 }

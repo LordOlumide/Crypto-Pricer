@@ -13,31 +13,31 @@ class LoadingScreen extends StatefulWidget {
 class _LoadingScreenState extends State<LoadingScreen> {
 
   Future<void> getRatesAndPush() async {
-    // try to get the rates
+    // Try to get the rates
     // if it fails, it will return -1 for SocketException
-    // and -errorCode for other errors
+    // and -errorCode for other errors.
     Map<String, double> rates = await DataHub().getInitialRates();
 
     if (rates["btcRate"]! >= 0) {
       // This means the rate is correct and everything worked.
       // So push to price screen
       if (mounted) {
-        // useless check that probably will never trigger
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
+        // Useless check that probably will never trigger.
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) {
           return PriceScreen(initialRates: rates);
         }));
       } else {
-        pushToErrorScreen(error: "Pushing to PriceScreen failed because not "
-            "mounted. This should be impossible.");
+        pushToErrorScreen(
+            error: "Pushing to PriceScreen failed because not "
+                "mounted. This should be impossible.");
       }
-
     } else if (rates.values.contains(-1)) {
       // This means SocketException so push to error screen
-        pushToErrorScreen(
-            error: "Error getting data. "
-                "Check your internet connection and try again"
-        );
-    } else if (errorCodes.containsValue(-rates['btcRate']!)){ // TODO: Fix this error
+      pushToErrorScreen(
+          error: "Error getting data. "
+              "Check your internet connection and try again");
+    } else if (errorCodes.containsKey(-rates["btcRate"]!)) {
       // This means an internet error from storage.errorCodes happened
       // Return the error that happened.
       int error = -rates["btcRate"]!.toInt();

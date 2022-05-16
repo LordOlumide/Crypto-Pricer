@@ -3,6 +3,8 @@ import 'package:flutter/cupertino.dart';
 import '../coin_data.dart';
 import 'dart:io' show Platform;
 import 'package:bitcoin_ticker_reloaded/services/data_hub.dart';
+import 'package:bitcoin_ticker_reloaded/screens/error_screen.dart';
+import 'package:bitcoin_ticker_reloaded/storage.dart';
 
 class PriceScreen extends StatefulWidget {
   final Map<String, double> initialRates;
@@ -14,6 +16,7 @@ class PriceScreen extends StatefulWidget {
 }
 
 class _PriceScreenState extends State<PriceScreen> {
+
   String dropdownMenuValue = currenciesList[currenciesList.indexOf('USD')];
 
   Map<String, double> rates = {};
@@ -26,6 +29,12 @@ class _PriceScreenState extends State<PriceScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    pushToErrorScreen({String error = ''}) {
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
+        return ErrorScreen(error: error);
+      }));
+    }
 
     Widget androidDropdown() {
       List<DropdownMenuItem<String>> items = [];
@@ -42,11 +51,16 @@ class _PriceScreenState extends State<PriceScreen> {
         items: items,
         onChanged: (String? selectedValue) async {
           Map<String, double> tempRates =
-              await DataHub().getRefreshedRates(fiat: dropdownMenuValue);
-          setState(() {
-            dropdownMenuValue = selectedValue!;
-            rates = tempRates;
-          });
+              await DataHub().getRefreshedRates(fiat: selectedValue!);
+          if (ratesAreCorrect(tempRates)) {
+            setState(() {
+              dropdownMenuValue = selectedValue;
+              rates = tempRates;
+            });
+          } else {
+            String errorString = checkErrorAndReturnErrorString(tempRates);
+            pushToErrorScreen(error: errorString);
+          }
         },
       );
     }
@@ -58,12 +72,16 @@ class _PriceScreenState extends State<PriceScreen> {
         magnification: 1.2,
         onSelectedItemChanged: (value) async {
           Map<String, double> tempRates =
-              await DataHub().getRefreshedRates(fiat: dropdownMenuValue);
-          print(tempRates);
-          setState(() {
-            dropdownMenuValue = currenciesList[value];
-            rates = tempRates;
-          });
+              await DataHub().getRefreshedRates(fiat: currenciesList[value]);
+          if (ratesAreCorrect(tempRates)) {
+            setState(() {
+              dropdownMenuValue = currenciesList[value];
+              rates = tempRates;
+            });
+          } else {
+            String errorString = checkErrorAndReturnErrorString(tempRates);
+            pushToErrorScreen(error: errorString);
+          }
         },
         children: currenciesList.map((e) => Text(e)).toList(),
       );

@@ -6,6 +6,9 @@ import 'package:bitcoin_ticker_reloaded/storage.dart';
 String coinAPIAddress = "https://rest.coinapi.io/v1/exchangerate";
 
 class NetworkHelper {
+  /// Sends http requests and return the formatted response,
+  /// error, or (in this application,
+  /// one of the error codes stored in storage.dart).
 
   Future<dynamic> getResponse(
       {required String cryptoCoin, required String fiatCurrency}) async {
@@ -20,6 +23,7 @@ class NetworkHelper {
         var decodedData = jsonDecode(data);
         return decodedData;
       } else {
+        // Returns error string from storage.errorCodes if internet error
         return errorCodes[response.statusCode];
       }
     } catch (e) {
