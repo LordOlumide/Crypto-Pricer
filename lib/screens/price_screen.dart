@@ -16,7 +16,6 @@ class PriceScreen extends StatefulWidget {
 }
 
 class _PriceScreenState extends State<PriceScreen> {
-
   String dropdownMenuValue = currenciesList[currenciesList.indexOf('USD')];
 
   Map<String, double> rates = {};
@@ -29,7 +28,6 @@ class _PriceScreenState extends State<PriceScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     pushToErrorScreen({String error = ''}) {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) {
         return ErrorScreen(error: error);
@@ -37,8 +35,11 @@ class _PriceScreenState extends State<PriceScreen> {
     }
 
     refresh(newValue) async {
+      setState(() {
+        dropdownMenuValue = '?';
+      });
       Map<String, double> tempRates =
-      await DataHub().getRefreshedRates(fiat: newValue);
+          await DataHub().getRefreshedRates(fiat: newValue);
       if (ratesAreCorrect(tempRates)) {
         setState(() {
           dropdownMenuValue = newValue;
@@ -83,7 +84,7 @@ class _PriceScreenState extends State<PriceScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.red[900],
+        backgroundColor: Colors.blue[800],
         title: Text('🤑 Coin Ticker'),
         centerTitle: true,
       ),
@@ -158,7 +159,8 @@ class _PriceScreenState extends State<PriceScreen> {
                 ),
               ),
               SizedBox(height: 50),
-              IconButton(
+              TextButton.icon(
+                label: Text('Click to refresh'),
                 onPressed: () {
                   refresh(dropdownMenuValue);
                 },
@@ -174,7 +176,7 @@ class _PriceScreenState extends State<PriceScreen> {
             height: 150.0,
             alignment: Alignment.center,
             padding: EdgeInsets.only(bottom: 30.0),
-            color: Colors.lightBlue,
+            color: Colors.blue[800],
             child: Platform.isIOS ? iosPicker() : androidDropdown(),
           ),
         ],
