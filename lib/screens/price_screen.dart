@@ -36,19 +36,31 @@ class _PriceScreenState extends State<PriceScreen> {
 
     refresh(newValue) async {
       setState(() {
-        dropdownMenuValue = '?';
+        // to temporarily show the values as '?', use -0.1 as a placeholder
+        // and check it at point of display.
+        rates = {'btcRate': -0.1, 'ethRate': -0.1, 'ltcRate': -0.1};
+        dropdownMenuValue = newValue;
       });
       Map<String, double> tempRates =
           await DataHub().getRefreshedRates(fiat: newValue);
       if (ratesAreCorrect(tempRates)) {
         setState(() {
-          dropdownMenuValue = newValue;
           rates = tempRates;
         });
       } else {
         String errorString = checkErrorAndReturnErrorString(tempRates);
         pushToErrorScreen(error: errorString);
       }
+    }
+
+    String displayRate(
+        {required Map<String, double> currentRatesMap,
+        required String crypto}) {
+      // Returns the direct rate to be displayed.
+      if (currentRatesMap[crypto] == -0.1) {
+        return '?';
+      }
+      return currentRatesMap[crypto].toString();
     }
 
     Widget androidDropdown() {
@@ -106,7 +118,10 @@ class _PriceScreenState extends State<PriceScreen> {
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 15.0),
                     child: Text(
-                      '1 BTC = ${rates['btcRate']} $dropdownMenuValue',
+                      '1 BTC = ${displayRate(
+                        currentRatesMap: rates,
+                        crypto: 'btcRate',
+                      )} $dropdownMenuValue',
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 20.0,
@@ -127,7 +142,10 @@ class _PriceScreenState extends State<PriceScreen> {
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 15.0),
                     child: Text(
-                      '1 ETH = ${rates['ethRate']} $dropdownMenuValue',
+                      '1 ETH = ${displayRate(
+                        currentRatesMap: rates,
+                        crypto: 'ethRate',
+                      )} $dropdownMenuValue',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 20.0,
@@ -148,9 +166,12 @@ class _PriceScreenState extends State<PriceScreen> {
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 15.0),
                     child: Text(
-                      '1 LTC = ${rates['ltcRate']} $dropdownMenuValue',
+                      '1 LTC = ${displayRate(
+                        currentRatesMap: rates,
+                        crypto: 'ltcRate',
+                      )} $dropdownMenuValue',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 20.0,
                         color: Colors.white,
                       ),
@@ -159,14 +180,20 @@ class _PriceScreenState extends State<PriceScreen> {
                 ),
               ),
               SizedBox(height: 50),
-              TextButton.icon(
-                label: Text('Click to refresh'),
-                onPressed: () {
-                  refresh(dropdownMenuValue);
-                },
-                icon: const Icon(
-                  Icons.refresh,
-                  size: 30.0,
+              Align(
+                child: TextButton.icon(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all<Color>(
+                        Colors.grey.withOpacity(0.6)),
+                  ),
+                  label: Text('Click to refresh'),
+                  onPressed: () {
+                    refresh(dropdownMenuValue);
+                  },
+                  icon: const Icon(
+                    Icons.refresh,
+                    size: 30.0,
+                  ),
                 ),
               ),
             ],
